@@ -5,12 +5,12 @@ from __future__ import division
 import unittest
 import numpy.testing as npt
 
-from wavemap import *
-from multishake import *
+import wavemap, multishake
+import numpy as np
 
 class TestDims(unittest.TestCase):
 	def test_slice(self):
-		computed = dim_slice(5,2,10)
+		computed = wavemap.dim_slice(5,2,10)
 		expected = (slice(None), slice(None), 10, slice(None), slice(None))
 
 	def setUp(self):
@@ -21,7 +21,7 @@ class TestDims(unittest.TestCase):
 
 	def test_scatter_per(self):
 		Q = self.Q
-		QQ = scatter(Q, periodic)
+		QQ = wavemap.scatter(Q, wavemap.periodic)
 		i,j = 1,2
 		npt.assert_allclose(QQ[i+1,j+1], Q[i,j])
 		npt.assert_allclose(QQ[0]-QQ[-2],0)
@@ -29,7 +29,7 @@ class TestDims(unittest.TestCase):
 
 	def test_scatter_neu(self):
 		Q = self.Q
-		QQ = scatter(Q, neumann)
+		QQ = wavemap.scatter(Q, wavemap.neumann)
 		i,j = 1,2
 		npt.assert_allclose(QQ[i+1,j+1], Q[i,j])
 		npt.assert_allclose(QQ[0,:]-QQ[1,:],0)
@@ -39,21 +39,21 @@ class TestDims(unittest.TestCase):
 
 	def test_laplace(self):
 		Q = self.Q
-		QQ = scatter(Q, periodic)
-		L = directed_laplace(QQ, 0)
+		QQ = wavemap.scatter(Q, wavemap.periodic)
+		L = wavemap.directed_laplace(QQ, 0)
 		self.assertEqual(np.shape(L), np.shape(Q))
 
 	def test_dir_grad(self):
 		Q = np.ones([5,5,3])
-		QQ = scatter(Q, periodic)
-		dQ = directed_grad(QQ, 0)
+		QQ = wavemap.scatter(Q, wavemap.periodic)
+		dQ = wavemap.directed_grad(QQ, 0)
 		self.assertEqual(np.shape(dQ), (5,5,3))
 		npt.assert_allclose(dQ, 0.)
 
 	def test_grad_pot(self):
 		Q = np.ones([5,5,3])
-		QQ = scatter(Q, border=periodic)
-		pot = grad_potential(QQ)
+		QQ = wavemap.scatter(Q, border=wavemap.periodic)
+		pot = wavemap.grad_potential(QQ)
 		npt.assert_allclose(pot, 0.)
 
 	def test_kinetic(self):
@@ -68,19 +68,19 @@ class TestDims(unittest.TestCase):
 			for N in [90,120,200, 400]:
 				X, Y = np.ogrid[-bound:bound:N*1j,-bound:bound:N*1j]
 				#
-				## Q = get_equivariant(X, Y, quartic_spike)
+				## Q = wavemap.get_equivariant(X, Y, wavemap.quartic_spike)
 				#
 				rr = np.square(X) + np.square(Y)
 				r = np.sqrt(rr)
-				pQ = quartic_spike(r)
+				pQ = wavemap.quartic_spike(r)
 				#
 				## pQ = np.cos(2*np.pi*X) + 0*Y
 				Q = pQ[:,:,np.newaxis]
-				npt.assert_allclose(kinetic(Q,Q), 0.)
-				## print 'q0', directed_grad_potential(Q, 0)
-				## print 'g0', directed_grad_potential(scatter(Q,neumann), 0)
-				## print 'g1', directed_grad_potential(scatter(Q,periodic), 1)
-				wm = get_wavemap(dt=.1, dx=1./N, border=neumann)
+				npt.assert_allclose(wavemap.kinetic(Q,Q), 0.)
+				## print 'q0', wavemap.directed_grad_potential(Q, 0)
+				## print 'g0', wavemap.directed_grad_potential(wavemap.scatter(Q,wavemap.neumann), 0)
+				## print 'g1', wavemap.directed_grad_potential(wavemap.scatter(Q,wavemap.periodic), 1)
+				wm = get_wavemap(dt=.1, dx=1./N, border=wavemap.neumann)
 				## print 'E', wm.energy(Q, Q)
 				yield wm.energy(Q, Q)
 		es = np.array(list(generate()))
@@ -106,14 +106,14 @@ class TestDims(unittest.TestCase):
 		X, Y = np.ogrid[-bound:bound:N*1j,-bound:bound:N*1j]
 
 
-def get_wavemap(dt=.1, dx=.1, border=periodic):
-	wm = WaveMap(dt=dt, dx=dx, border=border)
+def get_wavemap(dt=.1, dx=.1, border=wavemap.periodic):
+	wm = wavemap.WaveMap(dt=dt, dx=dx, border=border)
 	return wm
 
 def get_shake_stepper(dt=.1, dx=.1):
 	wm = get_wavemap(dt,dx)
 	def step(Q0, Q1):
-		return shake(Q0, Q1, force=wm.force, reaction_projection=wm.local_projection)
+		return multishake.shake(Q0, Q1, force=wm.force, reaction_projection=wm.local_projection)
 	return step
 
 
@@ -172,13 +172,13 @@ class TestEquiInitial(unittest.TestCase):
 	def test_quarticspike(self):
 		rr = np.square(self.X) + np.square(self.Y)
 		r = np.sqrt(rr)
-		res = quartic_spike(r)
+		res = wavemap.quartic_spike(r)
 		npt.assert_allclose(res[0,0],0.)
 		npt.assert_allclose(res[0,self.N//2], 0.)
 		npt.assert_allclose(res[self.N//2, self.N//2],1.)
 
 	def test_equi(self):
-		equi = get_equivariant(self.X, self.Y, quartic_spike)
+		equi = wavemap.get_equivariant(self.X, self.Y, wavemap.quartic_spike)
 		self.assertEqual(np.shape(equi), (self.N, self.N, 3))
 		npt.assert_allclose(equi[0,0], np.array([0.,0,-1]), err_msg='south pole at the boundaries')
 		mid = self.N//2
