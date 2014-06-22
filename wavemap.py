@@ -151,14 +151,14 @@ class WaveMap(object):
 		Z *= self.dt**2/self.dx**2
 		return Z
 
-	def local_projection(self, q, _=None):
+	def normalize(self, Q):
 		"""
-		Projection along q itself; the second argument is not used
+		Normalisation to length one
 		"""
-		norm = np.sqrt(np.sum(np.square(q)))
-		return q/norm
+		norm = np.sqrt(np.sum(np.square(Q), axis=-1))
+		return Q/norm[...,np.newaxis]
 
-	def reaction_projection(self, q, q0):
+	def local_reaction_projection(self, q, q0):
 		"""
 		Projection using the "reaction force" in the q0 direction
 		q0 is assumed to be already normalized
@@ -166,6 +166,16 @@ class WaveMap(object):
 		product = np.dot(q,q0)
 		lag = -product + np.sqrt(product**2 - np.dot(q,q) + 1)
 		projected = q + lag*q0
+		return projected
+
+	def reaction_projection(self, Q, Q0):
+		"""
+		Projection using the "reaction force" in the Q0 direction
+		Q0 is assumed to be already normalized
+		"""
+		product = np.sum(Q*Q0, axis=-1)
+		lag = -product + np.sqrt(product**2 - np.sum(np.square(Q), axis=-1) + 1)
+		projected = Q + lag[...,np.newaxis]*Q0
 		return projected
 
 	def elements(self, Q):
