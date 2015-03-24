@@ -138,9 +138,9 @@ class WaveMap(object):
 		"""
 		return np.reshape(q, (1,-1))
 
-	def force(self, Q):
+	def laplace(self, Q):
 		"""
-		Computes Laplace force
+		Computes Laplacian
 		"""
 		dimension = len(np.shape(Q)) - 1
 		Z = np.zeros_like(Q)
@@ -148,8 +148,16 @@ class WaveMap(object):
 		for direction in range(dimension):
 			lap = directed_laplace(QQ, direction)
 			Z += lap
-		Z *= self.dt**2/self.dx**2
+		Z /= self.dx**2
 		return Z
+
+	def total_force(self, Q):
+		return self.laplace(Q)
+
+	def force(self, Q):
+		F = self.total_force(Q)
+		F *= self.dt*self.dt
+		return F
 
 	def normalize(self, Q):
 		"""
