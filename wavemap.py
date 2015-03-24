@@ -162,6 +162,7 @@ class WaveMap(object):
 		F *= self.dt*self.dt
 		return F
 
+	@classmethod
 	def normalize(self, Q):
 		"""
 		Normalisation to length one
