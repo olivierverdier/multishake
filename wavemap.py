@@ -7,6 +7,9 @@ import functools
 
 np.seterr(invalid='raise')
 
+import scipy.optimize
+nlsolver = scipy.optimize.fsolve
+
 def local_projection(q, constraint, reaction):
 	"""
 	Project at a given point in space (so q is a simple vector)

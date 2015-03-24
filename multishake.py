@@ -5,8 +5,6 @@ from __future__ import division
 import numpy as np
 
 # q: 4 tensor, t,x,y,q
-import scipy.optimize
-nlsolver = scipy.optimize.fsolve
 
 def leap_frog(Q0, Q1, force):
 	"""
