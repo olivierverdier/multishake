@@ -206,6 +206,15 @@ class WaveMap(object):
 		energy = .5*vol*kinetic(Q0,Q1)/self.dt/self.dt + .5*vol_grad*grad_potential(QQ)
 		return energy
 
+	def energy_oscillation(self, Qs):
+		"""
+		Convenience method: returns all the differences E-E_0, and E_0
+		"""
+		energy = [self.energy(Qa,Qb) for Qa,Qb in zip(Qs[:-1],Qs[1:])]
+		E0 = energy[0]
+		denergy = np.array(energy) - E0
+		return E0, denergy
+
 def get_equivariant(X, Y, profile):
 	"""
 	An equivariant initial condition corresponding to the profile a(r).
