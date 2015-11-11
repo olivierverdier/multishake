@@ -8,6 +8,8 @@ import numpy.testing as npt
 import wavemap, multishake
 import numpy as np
 
+from utils import get_wavemap
+
 def space_iterator(shape):
 	"""
 	Iterate over the space components of Q
@@ -24,10 +26,6 @@ def global_projection(Q, reaction_projection, Q0):
 		projected = reaction_projection(Q[index], Q0[index])
 		Qp[index] = projected
 	return Qp
-
-def get_wavemap(dt=.1, dx=.1, border=wavemap.periodic):
-	wm = wavemap.WaveMap(dt=dt, dx=dx, border=border)
-	return wm
 
 class TestDims(unittest.TestCase):
 	def test_slice(self):
@@ -83,32 +81,6 @@ class TestDims(unittest.TestCase):
 		Q1 = np.ones([5,5,4])
 		wm = get_wavemap()
 		wm.energy(Q0,Q1)
-
-	def test_energy_2D(self):
-		bound = .5
-		def generate():
-			for N in [90,120,200, 400]:
-				X, Y = np.ogrid[-bound:bound:N*1j,-bound:bound:N*1j]
-				#
-				## Q = wavemap.get_equivariant(X, Y, wavemap.quartic_spike)
-				#
-				rr = np.square(X) + np.square(Y)
-				r = np.sqrt(rr)
-				pQ = wavemap.quartic_spike(r)
-				#
-				## pQ = np.cos(2*np.pi*X) + 0*Y
-				Q = pQ[:,:,np.newaxis]
-				npt.assert_allclose(wavemap.kinetic(Q,Q), 0.)
-				## print 'q0', wavemap.directed_grad_potential(Q, 0)
-				## print 'g0', wavemap.directed_grad_potential(wavemap.scatter(Q,wavemap.neumann), 0)
-				## print 'g1', wavemap.directed_grad_potential(wavemap.scatter(Q,wavemap.periodic), 1)
-				wm = get_wavemap(dt=.1, dx=1./N, border=wavemap.neumann)
-				## print 'E', wm.energy(Q, Q)
-				yield wm.energy(Q, Q)
-		es = np.array(list(generate()))
-		npt.assert_allclose(es, es[0], rtol=1e-2)
-
-
 
 	def test_energy_1D(self):
 		latitude = .5
@@ -195,25 +167,3 @@ class TestProjection(unittest.TestCase):
 		npt.assert_allclose(lengths, 1.)
 
 
-class TestEquiInitial(unittest.TestCase):
-	def setUp(self):
-		self.N = 5
-		self.X, self.Y = np.ogrid[-.5:.5:self.N*1j, -.5:.5:self.N*1j]
-
-	def test_quarticspike(self):
-		rr = np.square(self.X) + np.square(self.Y)
-		r = np.sqrt(rr)
-		res = wavemap.quartic_spike(r)
-		npt.assert_allclose(res[0,0],0.)
-		npt.assert_allclose(res[0,self.N//2], 0.)
-		npt.assert_allclose(res[self.N//2, self.N//2],1.)
-
-	def test_equi(self):
-		equi = wavemap.get_equivariant(self.X, self.Y, wavemap.quartic_spike)
-		self.assertEqual(np.shape(equi), (self.N, self.N, 3))
-		npt.assert_allclose(equi[0,0], np.array([0.,0,-1]), err_msg='south pole at the boundaries')
-		mid = self.N//2
-		npt.assert_allclose(equi[mid,mid], np.array([0.,0,1]), err_msg='north pole at the middle')
-		x = mid
-		y = mid + mid//2
-		npt.assert_allclose(equi[x,y,0]*(-self.Y[0,y]) + equi[x,y,1]*self.X[x,0], 0.)
