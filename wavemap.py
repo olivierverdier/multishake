@@ -172,21 +172,27 @@ class WaveMap(object):
 
 	def local_reaction_projection(self, q, q0):
 		"""
+		Not used.
 		Projection using the "reaction force" in the q0 direction
 		q0 is assumed to be already normalized
 		"""
 		product = np.dot(q,q0)
-		lag = -product + np.sqrt(product**2 - np.dot(q,q) + 1)
+		prod = np.dot(q,q) - 1
+		lag = stable_quad(product, prod)
 		projected = q + lag*q0
 		return projected
+
+
 
 	def reaction_projection(self, Q, Q0):
 		"""
 		Projection using the "reaction force" in the Q0 direction
 		Q0 is assumed to be already normalized
 		"""
-		product = np.sum(Q*Q0, axis=-1)
-		lag = -product + np.sqrt(product**2 - np.sum(np.square(Q), axis=-1) + 1)
+		scalar = np.sum(Q*Q0, axis=-1) # scalar product; half sum of l1 and l2
+		product = np.sum(np.square(Q), axis=-1) - 1 # product of l1 and l2
+		lag_ = - scalar - np.sqrt(scalar**2 - product) # stable version
+		lag = product/lag_
 		projected = Q + lag[...,np.newaxis]*Q0
 		return projected
 
@@ -215,6 +221,15 @@ class WaveMap(object):
 		E0 = energy[0]
 		denergy = np.array(energy) - E0
 		return E0, denergy
+
+
+def stable_quad(projection, prod):
+	"""
+	Not used.
+	"""
+	lag_ = -projection - np.sqrt(projection**2 - prod)
+	lag = prod/lag_
+	return lag
 
 def get_equivariant(X, Y, profile):
 	"""
