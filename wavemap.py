@@ -111,14 +111,6 @@ def directed_grad_potential(QQ, direction):
 	dQ = directed_grad(QQ, direction)
 	return np.sum(np.square(dQ))
 
-def kinetic(Q0, Q1):
-	"""
-	Kinetic energy * dt**2
-	"""
-	dQ = Q1 - Q0
-	kin = np.sum(np.square(dQ))
-	return kin
-
 class WaveMap(object):
 	def __init__(self, dt, dx, border):
 		self.dt = dt
@@ -202,13 +194,21 @@ class WaveMap(object):
 		pot = sum(directed_grad_potential(QQ, direction) for direction in range(np.ndim(QQ)-1))
 		return pot
 
+	def kinetic(self, Q0, Q1):
+		"""
+		Kinetic energy * dt**2
+		"""
+		dQ = Q1 - Q0
+		kin = np.sum(np.square(dQ))
+		return kin
+
 	def energy(self, Q0, Q1):
 		"""
 		Compute the energy given the state (Q0,Q1)
 		"""
 		QQ = scatter(Q0, self.border)
 		vol, vol_grad = self.elements(Q0)
-		energy = .5*vol*kinetic(Q0,Q1)/self.dt/self.dt + .5*vol_grad*self.grad_potential(QQ)
+		energy = .5*vol*self.kinetic(Q0,Q1)/self.dt/self.dt + .5*vol_grad*self.grad_potential(QQ)
 		return energy
 
 	def energy_oscillation(self, Qs):

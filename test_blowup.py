@@ -48,7 +48,8 @@ class TestEquiInitial(unittest.TestCase):
 				#
 				## pQ = np.cos(2*np.pi*X) + 0*Y
 				Q = pQ[:,:,np.newaxis]
-				npt.assert_allclose(wavemap.kinetic(Q,Q), 0.)
+				wm = get_wavemap()
+				npt.assert_allclose(wm.kinetic(Q,Q), 0.)
 				## print 'q0', wavemap.directed_grad_potential(Q, 0)
 				## print 'g0', wavemap.directed_grad_potential(wavemap.scatter(Q,wavemap.neumann), 0)
 				## print 'g1', wavemap.directed_grad_potential(wavemap.scatter(Q,wavemap.periodic), 1)
