@@ -259,6 +259,9 @@ def quartic_spike(r):
 	return res
 
 def get_breather(N, s, j=1, ell=2):
+	"""
+	Not used.
+	"""
 	x = np.linspace(0, 2*np.pi, N, endpoint=False) + np.pi/N
 	kappa = np.arctan(ell/j*np.tan(j*x))
 	ck = np.cos(kappa)
