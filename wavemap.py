@@ -131,8 +131,9 @@ class WaveMap(object):
 		self.dx = dx
 		self.border = border
 
+	@classmethod
 	def constraint(self, q):
-		return np.sum(np.square(q))
+		return np.sum(np.square(q), axis=-1) - 1.
 
 	def reaction(self, q):
 		"""
