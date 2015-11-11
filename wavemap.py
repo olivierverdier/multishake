@@ -7,8 +7,6 @@ import functools
 
 np.seterr(invalid='raise')
 
-import scipy.optimize
-nlsolver = scipy.optimize.fsolve
 
 def local_projection(q, constraint, reaction):
 	"""
