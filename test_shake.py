@@ -25,6 +25,10 @@ def global_projection(Q, reaction_projection, Q0):
 		Qp[index] = projected
 	return Qp
 
+def get_wavemap(dt=.1, dx=.1, border=wavemap.periodic):
+	wm = wavemap.WaveMap(dt=dt, dx=dx, border=border)
+	return wm
+
 class TestDims(unittest.TestCase):
 	def test_slice(self):
 		computed = wavemap.dim_slice(5,2,10)
@@ -70,7 +74,8 @@ class TestDims(unittest.TestCase):
 	def test_grad_pot(self):
 		Q = np.ones([5,5,3])
 		QQ = wavemap.scatter(Q, border=wavemap.periodic)
-		pot = wavemap.grad_potential(QQ)
+		wm = get_wavemap()
+		pot = wm.grad_potential(QQ)
 		npt.assert_allclose(pot, 0.)
 
 	def test_kinetic(self):
@@ -122,10 +127,6 @@ class TestDims(unittest.TestCase):
 		N = 20
 		X, Y = np.ogrid[-bound:bound:N*1j,-bound:bound:N*1j]
 
-
-def get_wavemap(dt=.1, dx=.1, border=wavemap.periodic):
-	wm = wavemap.WaveMap(dt=dt, dx=dx, border=border)
-	return wm
 
 def get_shake_stepper(dt=.1, dx=.1):
 	wm = get_wavemap(dt,dx)
