@@ -128,14 +128,16 @@ class WaveMap(object):
 		"""
 		return np.reshape(q, (1,-1))
 
+	def directions(self, QQ):
+		return range(len(np.shape(QQ)) - 1)
+
 	def laplace(self, Q):
 		"""
 		Computes Laplacian
 		"""
-		dimension = len(np.shape(Q)) - 1
 		Z = np.zeros_like(Q)
 		QQ = scatter(Q, self.border)
-		for direction in range(dimension):
+		for direction in self.directions(Q):
 			lap = directed_laplace(QQ, direction)
 			Z += lap
 		Z /= self.dx**2
