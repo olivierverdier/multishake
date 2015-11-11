@@ -39,7 +39,7 @@ def periodic(QQ, direction):
 	"""
 	Make a big vector QQ periodic in the given direction
 	"""
-	rank = len(np.shape(QQ))
+	rank = np.ndim(QQ)
 	QQ[dim_slice(rank, direction, 0)] = QQ[dim_slice(rank, direction, -2)]
 	QQ[dim_slice(rank, direction, -1)] = QQ[dim_slice(rank, direction, 1)]
 
@@ -48,7 +48,7 @@ def neumann(QQ, direction):
 	"""
 	Apply Neumann boundary condition to a scattered vector QQ in one direction
 	"""
-	rank = len(np.shape(QQ))
+	rank = np.ndim(QQ)
 	QQ[dim_slice(rank, direction, 0)] = QQ[dim_slice(rank, direction, 1)]
 	QQ[dim_slice(rank, direction, -1)] = QQ[dim_slice(rank, direction, -2)]
 
@@ -56,8 +56,7 @@ def pad(Q):
 	"""
 	Add zero on the border, and copy Q in the middle.
 	"""
-	shape = np.shape(Q)
-	rank = len(shape)
+	rank = np.ndim(Q)
 	big_shape = list(np.shape(Q))
 	for i in range(rank-1):
 		big_shape[i] += 2
@@ -72,7 +71,7 @@ def scatter(Q, border):
 	Padding in all directions, with boundary conditions `border`
 	"""
 	QQ = pad(Q)
-	rank = len(np.shape(Q))
+	rank = np.ndim(Q)
 	# add the extra values on the boundary
 	for direction in range(rank-1):
 		border(QQ, direction)
@@ -83,8 +82,7 @@ def directed_laplace(QQ, direction):
 	Discrete Laplace of a n+m-tensor in given direction (x=0, y=1, ...)
 	QQ: padded vector for boundary conditions
 	"""
-	shape = np.shape(QQ)
-	rank = len(shape)
+	rank = np.ndim(QQ)
 	slicer = functools.partial(dim_slice, rank, direction)
 	ddQQ = -2*QQ[slicer(slice(1,-1))] + QQ[slicer(slice(None,-2))] + QQ[slicer(slice(2,None))]
 	# remove the extra boundary conditions
@@ -129,7 +127,7 @@ class WaveMap(object):
 		return np.reshape(q, (1,-1))
 
 	def directions(self, QQ):
-		return range(len(np.shape(QQ)) - 1)
+		return range(np.ndim(QQ) - 1)
 
 	def laplace(self, Q):
 		"""
