@@ -235,6 +235,12 @@ class WaveMap(object):
 	def scalar_product(self, Q1, Q2):
 		return np.sum(Q1*Q2, axis=-1)
 
+class HyperbolicWaveMap(WaveMap):
+	def scalar_product(self, Q1, Q2):
+		signature = -np.ones(Q2.shape[-1])
+		signature[-1] = 1.
+		return np.sum(Q1*Q2*signature, axis=-1)
+
 
 def stable_quad(projection, prod):
 	"""
