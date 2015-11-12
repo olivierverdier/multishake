@@ -126,13 +126,6 @@ class WaveMap(object):
 		self.dx = dx
 		self.border = border
 
-	def reaction(self, q):
-		"""
-		Jacobian of the constraint
-		(not used)
-		"""
-		return np.reshape(q, (1,-1))
-
 	def directions(self, QQ):
 		return range(np.ndim(QQ) - 1)
 
@@ -155,19 +148,6 @@ class WaveMap(object):
 		F = self.total_force(Q)
 		F *= self.dt*self.dt
 		return F
-
-
-	def local_reaction_projection(self, q, q0):
-		"""
-		Not used.
-		Projection using the "reaction force" in the q0 direction
-		q0 is assumed to be already normalized
-		"""
-		product = np.dot(q,q0)
-		prod = np.dot(q,q) - 1
-		lag = stable_quad(product, prod)
-		projected = q + lag*q0
-		return projected
 
 	def elements(self, Q):
 		"""
@@ -210,6 +190,26 @@ class WaveMap(object):
 	def constraint(self, q):
 		# signature
 		return np.sum(np.square(q), axis=-1) - 1.
+
+	def reaction(self, q):
+		"""
+		Jacobian of the constraint
+		(not used)
+		"""
+		return np.reshape(q, (1,-1))
+
+	def local_reaction_projection(self, q, q0):
+		"""
+		Not used.
+		Projection using the "reaction force" in the q0 direction
+		q0 is assumed to be already normalized
+		"""
+		product = np.dot(q,q0)
+		prod = np.dot(q,q) - 1
+		lag = stable_quad(product, prod)
+		projected = q + lag*q0
+		return projected
+
 
 	def reaction_projection(self, Q, Q0):
 		"""
