@@ -120,19 +120,11 @@ def directed_grad(QQ, direction):
 	dQ = dQQ[tuple(gather)]
 	return dQ
 
-def directed_grad_potential(QQ, direction):
-	dQ = directed_grad(QQ, direction)
-	return np.sum(np.square(dQ))
-
 class WaveMap(object):
 	def __init__(self, dt, dx, border):
 		self.dt = dt
 		self.dx = dx
 		self.border = border
-
-	@classmethod
-	def constraint(self, q):
-		return np.sum(np.square(q), axis=-1) - 1.
 
 	def reaction(self, q):
 		"""
@@ -164,13 +156,6 @@ class WaveMap(object):
 		F *= self.dt*self.dt
 		return F
 
-	@classmethod
-	def normalize(self, Q):
-		"""
-		Normalisation to length one
-		"""
-		norm = np.sqrt(np.sum(np.square(Q), axis=-1))
-		return Q/norm[...,np.newaxis]
 
 	def local_reaction_projection(self, q, q0):
 		"""
@@ -184,20 +169,6 @@ class WaveMap(object):
 		projected = q + lag*q0
 		return projected
 
-
-
-	def reaction_projection(self, Q, Q0):
-		"""
-		Projection using the "reaction force" in the Q0 direction
-		Q0 is assumed to be already normalized
-		"""
-		scalar = np.sum(Q*Q0, axis=-1) # scalar product; half sum of l1 and l2
-		product = np.sum(np.square(Q), axis=-1) - 1 # product of l1 and l2
-		lag_ = - scalar - np.sqrt(scalar**2 - product) # stable version
-		lag = product/lag_
-		projected = Q + lag[...,np.newaxis]*Q0
-		return projected
-
 	def elements(self, Q):
 		"""
 		Volume elements
@@ -206,7 +177,7 @@ class WaveMap(object):
 		return self.dx**dim, self.dx**(dim-2)
 
 	def grad_potential(self, QQ):
-		pot = sum(directed_grad_potential(QQ, direction) for direction in range(np.ndim(QQ)-1))
+		pot = sum(self.directed_grad_potential(QQ, direction) for direction in range(np.ndim(QQ)-1))
 		return pot
 
 	def kinetic(self, Q0, Q1):
@@ -234,6 +205,38 @@ class WaveMap(object):
 		E0 = energy[0]
 		denergy = np.array(energy) - E0
 		return E0, denergy
+
+	@classmethod
+	def constraint(self, q):
+		# signature
+		return np.sum(np.square(q), axis=-1) - 1.
+
+	def reaction_projection(self, Q, Q0):
+		"""
+		Projection using the "reaction force" in the Q0 direction
+		Q0 is assumed to be already normalized
+		"""
+		scalar = np.sum(Q*Q0, axis=-1) # scalar product; half sum of l1 and l2
+		# signature on following line only?
+		product = np.sum(np.square(Q), axis=-1) - 1 # product of l1 and l2
+		lag_ = - scalar - np.sqrt(scalar**2 - product) # stable version
+		lag = product/lag_
+		projected = Q + lag[...,np.newaxis]*Q0
+		return projected
+
+	def directed_grad_potential(self, QQ, direction):
+		dQ = directed_grad(QQ, direction)
+		# signature:
+		return np.sum(np.square(dQ))
+
+	@classmethod
+	def normalize(self, Q):
+		"""
+		Normalisation to length one
+		"""
+		# signature
+		norm = np.sqrt(np.sum(np.square(Q), axis=-1))
+		return Q/norm[...,np.newaxis]
 
 
 def stable_quad(projection, prod):
