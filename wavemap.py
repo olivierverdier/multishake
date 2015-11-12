@@ -160,14 +160,6 @@ class WaveMap(object):
 		pot = sum(self.directed_grad_potential(QQ, direction) for direction in range(np.ndim(QQ)-1))
 		return pot
 
-	def kinetic(self, Q0, Q1):
-		"""
-		Kinetic energy * dt**2
-		"""
-		dQ = Q1 - Q0
-		kin = np.sum(np.square(dQ))
-		return kin
-
 	def energy(self, Q0, Q1):
 		"""
 		Compute the energy given the state (Q0,Q1)
@@ -220,6 +212,14 @@ class WaveMap(object):
 		lag = product/lag_
 		projected = Q + lag[...,np.newaxis]*Q0
 		return projected
+
+	def kinetic(self, Q0, Q1):
+		"""
+		Kinetic energy * dt**2
+		"""
+		dQ = Q1 - Q0
+		kin = np.sum(self.scalar_product(dQ, dQ))
+		return kin
 
 	def directed_grad_potential(self, QQ, direction):
 		dQ = directed_grad(QQ, direction)
