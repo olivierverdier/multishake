@@ -186,10 +186,8 @@ class WaveMap(object):
 		denergy = np.array(energy) - E0
 		return E0, denergy
 
-	@classmethod
 	def constraint(self, q):
-		# signature
-		return np.sum(np.square(q), axis=-1) - 1.
+		return self.scalar_product(q,q) - 1.
 
 	def reaction(self, q):
 		"""
@@ -216,9 +214,8 @@ class WaveMap(object):
 		Projection using the "reaction force" in the Q0 direction
 		Q0 is assumed to be already normalized
 		"""
-		scalar = np.sum(Q*Q0, axis=-1) # scalar product; half sum of l1 and l2
-		# signature on following line only?
-		product = np.sum(np.square(Q), axis=-1) - 1 # product of l1 and l2
+		scalar = self.scalar_product(Q, Q0) # scalar product; half sum of l1 and l2
+		product = self.scalar_product(Q, Q) - 1 # product of l1 and l2
 		lag_ = - scalar - np.sqrt(scalar**2 - product) # stable version
 		lag = product/lag_
 		projected = Q + lag[...,np.newaxis]*Q0
@@ -226,17 +223,17 @@ class WaveMap(object):
 
 	def directed_grad_potential(self, QQ, direction):
 		dQ = directed_grad(QQ, direction)
-		# signature:
-		return np.sum(np.square(dQ))
+		return np.sum(self.scalar_product(dQ, dQ))
 
-	@classmethod
 	def normalize(self, Q):
 		"""
 		Normalisation to length one
 		"""
-		# signature
-		norm = np.sqrt(np.sum(np.square(Q), axis=-1))
+		norm = np.sqrt(self.scalar_product(Q,Q))
 		return Q/norm[...,np.newaxis]
+
+	def scalar_product(self, Q1, Q2):
+		return np.sum(Q1*Q2, axis=-1)
 
 
 def stable_quad(projection, prod):
