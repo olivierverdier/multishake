@@ -7,6 +7,21 @@ import functools
 
 np.seterr(invalid='raise')
 
+"""
+The discretisation is made of a grid of “particles”, each with degrees of freedom.
+The dimension of the grid is the dimension of the source, the dofs are the dimension
+of the space where the target is embedded.
+
+So, for a "chain", i.e., a map (t,x) -> M, the shape is going to be (N,n),
+where there are N particles, and the target vector space has dimension n.
+
+Chain examples are: breather, gordon example.
+
+For an evolving surface, i.e., a map (t,x,y) -> M, the shape is (N1,N2,n),
+where there are N1 x N2 particles, each with n degrees of freedom.
+
+Surface examples are: Blowup, exact solution.
+"""
 
 def local_projection(q, constraint, reaction):
 	"""
