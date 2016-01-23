@@ -6,9 +6,9 @@ import unittest
 import numpy as np
 import numpy.testing as npt
 
-import wavemap
-import blowup
-from utils import get_wavemap
+from multishake import wavemap
+from multishake import blowup
+from multishake.utils import get_wavemap
 
 class TestEquiInitial(unittest.TestCase):
 	def setUp(self):

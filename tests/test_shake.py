@@ -5,10 +5,10 @@ from __future__ import division
 import unittest
 import numpy.testing as npt
 
-import wavemap, multishake
+from multishake import wavemap, multishake
 import numpy as np
 
-from utils import get_wavemap
+from multishake.utils import get_wavemap
 
 def space_iterator(shape):
 	"""

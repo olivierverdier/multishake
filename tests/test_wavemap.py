@@ -4,7 +4,7 @@ from __future__ import division
 
 import unittest
 
-from wavemap import get_breather
+from multishake.wavemap import get_breather
 
 class TestBreather(unittest.TestCase):
 	def test_init(self):
